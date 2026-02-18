@@ -425,6 +425,9 @@ const sidebarParticipants = [
 ]
 
 function ParticipantsSidebar({ onClose, pendingUsers, onAcceptUser, onDeclineUser, onAcceptAll }) {
+  const [pendingOpen, setPendingOpen] = useState(true)
+  const [participantsOpen, setParticipantsOpen] = useState(true)
+
   return (
     <div className="sidebar">
       <div className="sidebar__header">
@@ -437,32 +440,40 @@ function ParticipantsSidebar({ onClose, pendingUsers, onAcceptUser, onDeclineUse
       <div className="sidebar__content">
         {pendingUsers.length > 0 && (
           <div className="sidebar__section sidebar__section--pending">
-            <div className="sidebar__section-header">
+            <button className="sidebar__section-header" onClick={() => setPendingOpen(prev => !prev)}>
               <span className="sidebar__section-title">Ожидают подключения ({pendingUsers.length})</span>
-              <IconChevronUp />
-            </div>
-            {pendingUsers.length > 1 && (
-              <button className="sidebar__allow-all" onClick={onAcceptAll}>Разрешить подключение всем</button>
+              <span className={`sidebar__chevron ${pendingOpen ? '' : 'sidebar__chevron--closed'}`}>
+                <IconChevronUp />
+              </span>
+            </button>
+            {pendingOpen && (
+              <>
+                {pendingUsers.length > 1 && (
+                  <button className="sidebar__allow-all" onClick={onAcceptAll}>Разрешить подключение всем</button>
+                )}
+                {pendingUsers.map((user) => (
+                  <div key={user.id} className="sidebar__pending-row">
+                    <div className="sidebar__pending-info">
+                      <span className="sidebar__participant-name">{user.name}</span>
+                      {user.role && <span className="sidebar__participant-role">{user.role}</span>}
+                    </div>
+                    <button className="sidebar__pending-accept" onClick={() => onAcceptUser(user.id)}><IconCheck /></button>
+                    <button className="sidebar__pending-decline" onClick={() => onDeclineUser(user.id)}><IconClose /></button>
+                  </div>
+                ))}
+              </>
             )}
-            {pendingUsers.map((user) => (
-              <div key={user.id} className="sidebar__pending-row">
-                <div className="sidebar__pending-info">
-                  <span className="sidebar__participant-name">{user.name}</span>
-                  {user.role && <span className="sidebar__participant-role">{user.role}</span>}
-                </div>
-                <button className="sidebar__pending-accept" onClick={() => onAcceptUser(user.id)}><IconCheck /></button>
-                <button className="sidebar__pending-decline" onClick={() => onDeclineUser(user.id)}><IconClose /></button>
-              </div>
-            ))}
           </div>
         )}
 
         <div className="sidebar__section">
-          <div className="sidebar__section-header">
+          <button className="sidebar__section-header" onClick={() => setParticipantsOpen(prev => !prev)}>
             <span className="sidebar__section-title">Участники ({sidebarParticipants.length})</span>
-            <IconChevronUp />
-          </div>
-          {sidebarParticipants.map((user, i) => (
+            <span className={`sidebar__chevron ${participantsOpen ? '' : 'sidebar__chevron--closed'}`}>
+              <IconChevronUp />
+            </span>
+          </button>
+          {participantsOpen && sidebarParticipants.map((user, i) => (
             <div key={i} className="sidebar__participant-row">
               <span className="sidebar__participant-name">{user.name}</span>
               {user.isModerator && <span className="tooltip-wrap"><IconModerator /><span className="tooltip">Модератор</span></span>}
@@ -482,6 +493,142 @@ function ParticipantsSidebar({ onClose, pendingUsers, onAcceptUser, onDeclineUse
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+/* ===== Settings Sidebar ===== */
+function SettingsSidebar({ onClose }) {
+  const [accessMode, setAccessMode] = useState('guests_with_permission')
+  const [moderatorsAllow, setModeratorsAllow] = useState(true)
+  const [soundEnabled, setSoundEnabled] = useState(true)
+  const [notifEnabled, setNotifEnabled] = useState(true)
+
+  return (
+    <div className="sidebar">
+      <div className="sidebar__header">
+        <span className="sidebar__title">Настройки звонка</span>
+        <button className="sidebar__close" onClick={onClose}>
+          <IconClose />
+        </button>
+      </div>
+
+      <div className="sidebar__content settings-content">
+        <div className="settings-section">
+          <div className="settings-label">Подключение к звонку доступно:</div>
+          <label className="settings-radio">
+            <input type="radio" name="access" checked={accessMode === 'all'} onChange={() => setAccessMode('all')} />
+            <span className="settings-radio__dot" />
+            <span className="settings-radio__text">Всем</span>
+          </label>
+          <label className="settings-radio">
+            <input type="radio" name="access" checked={accessMode === 'guests_with_permission'} onChange={() => setAccessMode('guests_with_permission')} />
+            <span className="settings-radio__dot" />
+            <span className="settings-radio__text">Гостям с разрешения</span>
+          </label>
+          <label className="settings-radio">
+            <input type="radio" name="access" checked={accessMode === 'all_with_permission'} onChange={() => setAccessMode('all_with_permission')} />
+            <span className="settings-radio__dot" />
+            <span className="settings-radio__text">Всем с разрешения</span>
+          </label>
+        </div>
+
+        <div className="settings-section">
+          <div className="settings-label">Подключение разрешают:</div>
+          <div className="settings-toggle-row">
+            <div className="settings-toggle-info">
+              <span className="settings-toggle-title">Модераторы и пользователи приложения</span>
+              <span className="settings-toggle-desc">При отключении функции — только модераторы</span>
+            </div>
+            <button className={`settings-toggle ${moderatorsAllow ? 'settings-toggle--on' : ''}`} onClick={() => setModeratorsAllow(prev => !prev)}>
+              <span className="settings-toggle__thumb" />
+            </button>
+          </div>
+        </div>
+
+        <div className="settings-section">
+          <div className="settings-label">Звук и уведомление о запросах на подключение</div>
+          <div className="settings-toggle-row">
+            <div className="settings-toggle-info">
+              <span className="settings-toggle-title">Звуковой сигнал</span>
+              <span className="settings-toggle-desc">Звуковой сигнал о пользователях, ожидающих разрешения на подключение</span>
+            </div>
+            <button className={`settings-toggle ${soundEnabled ? 'settings-toggle--on' : ''}`} onClick={() => setSoundEnabled(prev => !prev)}>
+              <span className="settings-toggle__thumb" />
+            </button>
+          </div>
+          <div className="settings-toggle-row">
+            <div className="settings-toggle-info">
+              <span className="settings-toggle-title">Уведомления</span>
+              <span className="settings-toggle-desc">Уведомление о пользователях, ожидающих разрешения на подключение</span>
+            </div>
+            <button className={`settings-toggle ${notifEnabled ? 'settings-toggle--on' : ''}`} onClick={() => setNotifEnabled(prev => !prev)}>
+              <span className="settings-toggle__thumb" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ===== More Menu ===== */
+// Виртуальные фоны — лицо в рамке
+function IconVirtualBg() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="3" width="18" height="18" rx="2" stroke="rgba(255,255,255,0.92)" strokeWidth="1.5" fill="none"/>
+      <circle cx="12" cy="10" r="3" fill="rgba(255,255,255,0.92)"/>
+      <path d="M7 19c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="rgba(255,255,255,0.92)" strokeWidth="1.5" fill="none"/>
+    </svg>
+  )
+}
+
+// Настройки звонка — шестерёнка (outline)
+function IconSettings() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46a.5.5 0 00-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65A.49.49 0 0014 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1a.49.49 0 00-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46a.5.5 0 00.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z" fill="rgba(255,255,255,0.92)"/>
+    </svg>
+  )
+}
+
+// Режим вебинара — мегафон/рупор
+function IconWebinar() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M18 11v2h4v-2h-4zm-2 6.61c.96.71 2.21 1.65 3.2 2.39.4-.53.8-1.07 1.2-1.6-.99-.74-2.24-1.68-3.2-2.4-.4.54-.8 1.08-1.2 1.61zM20.4 5.6c-.4-.53-.8-1.07-1.2-1.6-.99.74-2.24 1.68-3.2 2.4.4.53.8 1.07 1.2 1.6.96-.72 2.21-1.65 3.2-2.4zM4 9c-1.1 0-2 .9-2 2v2c0 1.1.9 2 2 2h1l5 3V6L5 9H4zm11.5 3c0-1.33-.58-2.53-1.5-3.35v6.69c.92-.81 1.5-2.01 1.5-3.34z" fill="rgba(255,255,255,0.92)"/>
+    </svg>
+  )
+}
+
+function MoreMenu({ onClose, onOpenSettings }) {
+  const menuRef = useRef(null)
+
+  const items = [
+    { icon: <IconVirtualBg />, label: 'Виртуальные фоны', action: onClose },
+    { icon: <IconSettings />, label: 'Настройки звонка', action: onOpenSettings },
+    { icon: <IconWebinar />, label: 'Режим «вебинара»', action: onClose },
+  ]
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        onClose()
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [onClose])
+
+  return (
+    <div className="more-menu" ref={menuRef}>
+      {items.map((item, i) => (
+        <button key={i} className="more-menu__item" onClick={item.action}>
+          <span className="more-menu__icon">{item.icon}</span>
+          <span className="more-menu__label">{item.label}</span>
+        </button>
+      ))}
     </div>
   )
 }
@@ -545,6 +692,8 @@ function FlyingEmoji({ emoji, id, onDone }) {
 /* ===== App ===== */
 function App() {
   const [showReactions, setShowReactions] = useState(false)
+  const [showMoreMenu, setShowMoreMenu] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
   const [flyingEmojis, setFlyingEmojis] = useState([])
   const emojiButtonRef = useRef(null)
   const [showSidebar, setShowSidebar] = useState(false)
@@ -685,6 +834,9 @@ function App() {
             onAcceptAll={handleAcceptAll}
           />
         )}
+        {showSettings && (
+          <SettingsSidebar onClose={() => setShowSettings(false)} />
+        )}
       </div>
 
       <div className="control-bar">
@@ -707,7 +859,15 @@ function App() {
           </div>
           <ControlButton icon={<IconScreenShare />} />
           <ControlButton icon={<IconHand />} />
-          <ControlButton icon={<IconMore />} />
+          <div className="more-button-wrapper">
+            {showMoreMenu && (
+              <MoreMenu
+                onClose={() => setShowMoreMenu(false)}
+                onOpenSettings={() => { setShowMoreMenu(false); setShowSettings(true); setShowSidebar(false); showSidebarRef.current = false }}
+              />
+            )}
+            <ControlButton icon={<IconMore />} onClick={() => setShowMoreMenu(prev => !prev)} />
+          </div>
           <ControlButton icon={<IconEndCall />} endCall />
         </div>
 
