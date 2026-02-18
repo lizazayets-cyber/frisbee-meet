@@ -281,10 +281,68 @@ function ControlButton({ icon, chevron, text, endCall, compact, badge, onClick }
   )
 }
 
+/* ===== Notification Sound ===== */
+function playNotificationSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(880, ctx.currentTime)
+    osc.frequency.setValueAtTime(1047, ctx.currentTime + 0.1)
+    gain.gain.setValueAtTime(0.08, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3)
+    osc.start(ctx.currentTime)
+    osc.stop(ctx.currentTime + 0.3)
+  } catch {}
+}
+
+/* ===== Join Request Notification ===== */
+const joinRequests = [
+  { name: 'Андрей Захаров', initials: 'АЗ', color: '#40b259' },
+  { name: 'Ольга Сидорова', initials: 'ОС', color: '#3BABE8' },
+  { name: 'Дмитрий Козлов', initials: 'ДК', color: '#F07D2E' },
+]
+
+function IconClose() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M18.3 5.71a1 1 0 00-1.41 0L12 10.59 7.11 5.7A1 1 0 105.7 7.11L10.59 12 5.7 16.89a1 1 0 101.41 1.41L12 13.41l4.89 4.89a1 1 0 001.41-1.41L13.41 12l4.89-4.89a1 1 0 000-1.4z" fill="rgba(255,255,255,0.55)"/>
+    </svg>
+  )
+}
+
+function JoinNotification({ request, onAccept, onDecline, onClose }) {
+  return (
+    <div className="join-notification">
+      <div className="join-notification__avatar" style={{ backgroundColor: request.color }}>
+        {request.initials}
+      </div>
+      <div className="join-notification__info">
+        <span className="join-notification__name">{request.name}</span>
+        <span className="join-notification__status">Ожидает подключения</span>
+      </div>
+      <button className="join-notification__action join-notification__action--accept" onClick={onAccept}>
+        Принять
+      </button>
+      <button className="join-notification__action join-notification__action--decline" onClick={onDecline}>
+        Отклонить
+      </button>
+      <button className="join-notification__close" onClick={onClose}>
+        <IconClose />
+      </button>
+    </div>
+  )
+}
+
 /* ===== Reactions Panel ===== */
 const reactions = ['👋', '❤️', '👍', '👏', '🎉', '🔥', '🤣', '🤔', '😠', '👎', '😭', '💩']
 
-function ReactionsPanel({ onClose }) {
+let flyIdCounter = 0
+
+function ReactionsPanel({ onClose, onReact }) {
   const panelRef = useRef(null)
 
   useEffect(() => {
@@ -303,7 +361,7 @@ function ReactionsPanel({ onClose }) {
         <button
           key={emoji}
           className="reactions-panel__item"
-          onClick={() => onClose()}
+          onClick={() => onReact(emoji)}
         >
           {emoji}
         </button>
@@ -312,13 +370,103 @@ function ReactionsPanel({ onClose }) {
   )
 }
 
+/* ===== Flying Emoji ===== */
+function FlyingEmoji({ emoji, id, onDone }) {
+  const offsetX = useRef(20 + Math.random() * 40)
+  const duration = useRef(1.8 + Math.random() * 0.8)
+
+  useEffect(() => {
+    const timer = setTimeout(() => onDone(id), duration.current * 1000)
+    return () => clearTimeout(timer)
+  }, [id, onDone])
+
+  return (
+    <div
+      className="flying-emoji"
+      style={{
+        left: `${offsetX.current}px`,
+        animationDuration: `${duration.current}s`,
+      }}
+    >
+      {emoji}
+    </div>
+  )
+}
+
 /* ===== App ===== */
 function App() {
   const [showReactions, setShowReactions] = useState(false)
+  const [flyingEmojis, setFlyingEmojis] = useState([])
   const emojiButtonRef = useRef(null)
+
+  // Join request notification
+  const [notification, setNotification] = useState(null)
+  const [dismissed, setDismissed] = useState(false)
+  const requestIndexRef = useRef(0)
+  const timerRef = useRef(null)
+
+  const showNextRequest = () => {
+    const req = joinRequests[requestIndexRef.current % joinRequests.length]
+    requestIndexRef.current++
+    setNotification(req)
+    setDismissed(false)
+    playNotificationSound()
+  }
+
+  const scheduleNext = () => {
+    clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(showNextRequest, 8000)
+  }
+
+  const handleDismiss = () => {
+    setDismissed(true)
+    setTimeout(() => setNotification(null), 300)
+    scheduleNext()
+  }
+
+  const handleAccept = () => {
+    setDismissed(true)
+    setTimeout(() => setNotification(null), 300)
+    scheduleNext()
+  }
+
+  const handleDecline = () => {
+    setDismissed(true)
+    setTimeout(() => setNotification(null), 300)
+    scheduleNext()
+  }
+
+  useEffect(() => {
+    timerRef.current = setTimeout(showNextRequest, 3000)
+    return () => clearTimeout(timerRef.current)
+  }, [])
+
+  const handleReact = (emoji) => {
+    const id = ++flyIdCounter
+    setFlyingEmojis(prev => [...prev, { id, emoji }])
+  }
+
+  const handleFlyDone = (id) => {
+    setFlyingEmojis(prev => prev.filter(e => e.id !== id))
+  }
 
   return (
     <div className="video-conference">
+      {notification && (
+        <div className={`join-notification-wrapper ${dismissed ? 'join-notification-wrapper--out' : ''}`}>
+          <JoinNotification
+            request={notification}
+            onAccept={handleAccept}
+            onDecline={handleDecline}
+            onClose={handleDismiss}
+          />
+        </div>
+      )}
+
+      {flyingEmojis.map(({ id, emoji }) => (
+        <FlyingEmoji key={id} id={id} emoji={emoji} onDone={handleFlyDone} />
+      ))}
+
       <div className="video-grid">
         {participants.map(p => (
           <VideoTile key={p.id} participant={p} />
@@ -333,7 +481,10 @@ function App() {
           <ControlButton icon={<IconCamera />} chevron />
           <div className="emoji-button-wrapper" ref={emojiButtonRef}>
             {showReactions && (
-              <ReactionsPanel onClose={() => setShowReactions(false)} />
+              <ReactionsPanel
+                onClose={() => setShowReactions(false)}
+                onReact={handleReact}
+              />
             )}
             <ControlButton
               icon={<IconEmoji />}

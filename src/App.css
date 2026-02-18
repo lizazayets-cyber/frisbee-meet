@@ -226,6 +226,133 @@
   white-space: nowrap;
 }
 
+/* ===== Join Request Notification ===== */
+.join-notification-wrapper {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  animation: notifIn 0.3s ease-out forwards;
+}
+
+.join-notification-wrapper--out {
+  animation: notifOut 0.3s ease-in forwards;
+}
+
+@keyframes notifIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes notifOut {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+}
+
+.join-notification {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #232325;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  white-space: nowrap;
+}
+
+.join-notification__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.join-notification__info {
+  display: flex;
+  flex-direction: column;
+}
+
+.join-notification__name {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18px;
+  letter-spacing: 0.25px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.join-notification__status {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 18px;
+  letter-spacing: 0.25px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.join-notification__action {
+  padding: 7px 16px;
+  border: none;
+  background: none;
+  border-radius: 1000px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18px;
+  letter-spacing: 0.1px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.join-notification__action--accept {
+  color: #40b259;
+}
+
+.join-notification__action--accept:hover {
+  background: rgba(64, 178, 89, 0.1);
+}
+
+.join-notification__action--decline {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.join-notification__action--decline:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.join-notification__close {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.join-notification__close:hover svg path {
+  fill: rgba(255, 255, 255, 0.9);
+}
+
 /* ===== Emoji Button Wrapper ===== */
 .emoji-button-wrapper {
   position: relative;
@@ -264,6 +391,30 @@
 .reactions-panel__item:hover {
   transform: scale(1.3);
   background: rgba(255, 255, 255, 0.1);
+}
+
+/* ===== Flying Emoji ===== */
+.flying-emoji {
+  position: absolute;
+  bottom: 80px;
+  font-size: 40px;
+  z-index: 100;
+  pointer-events: none;
+  animation: flyUp ease-out forwards;
+}
+
+@keyframes flyUp {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-70vh) scale(1.2);
+  }
 }
 
 /* Notification badge */
