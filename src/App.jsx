@@ -244,7 +244,10 @@ function VideoTile({ participant }) {
       )}
       <div className="video-tile__name">
         {isModerator && (
-          <span className="video-tile__name-icon"><IconModerator /></span>
+          <span className="video-tile__name-icon tooltip-wrap">
+            <IconModerator />
+            <span className="tooltip">Модератор</span>
+          </span>
         )}
         {isMicOff && (
           <span className="video-tile__name-icon"><IconMicOff /></span>
@@ -300,17 +303,25 @@ function playNotificationSound() {
   } catch {}
 }
 
-/* ===== Join Request Notification ===== */
-const joinRequests = [
-  { name: 'Андрей Захаров', initials: 'АЗ', color: '#40b259' },
-  { name: 'Ольга Сидорова', initials: 'ОС', color: '#3BABE8' },
-  { name: 'Дмитрий Козлов', initials: 'ДК', color: '#F07D2E' },
+/* ===== Join Request Data ===== */
+const allJoinRequests = [
+  { id: 1, name: 'Андрей Захаров', initials: 'АЗ', color: '#40b259', role: 'Гость' },
+  { id: 2, name: 'Ольга Сидорова', initials: 'ОС', color: '#3BABE8', role: 'Гость' },
+  { id: 3, name: 'Дмитрий Козлов', initials: 'ДК', color: '#F07D2E', role: 'Гость' },
 ]
 
 function IconClose() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
       <path d="M18.3 5.71a1 1 0 00-1.41 0L12 10.59 7.11 5.7A1 1 0 105.7 7.11L10.59 12 5.7 16.89a1 1 0 101.41 1.41L12 13.41l4.89 4.89a1 1 0 001.41-1.41L13.41 12l4.89-4.89a1 1 0 000-1.4z" fill="rgba(255,255,255,0.55)"/>
+    </svg>
+  )
+}
+
+function IconAddPerson() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="rgba(255,255,255,0.55)"/>
     </svg>
   )
 }
@@ -330,6 +341,29 @@ function JoinNotification({ request, onAccept, onDecline, onClose }) {
       </button>
       <button className="join-notification__action join-notification__action--decline" onClick={onDecline}>
         Отклонить
+      </button>
+      <button className="join-notification__close" onClick={onClose}>
+        <IconClose />
+      </button>
+    </div>
+  )
+}
+
+function GroupNotification({ count, onAcceptAll, onView, onClose }) {
+  return (
+    <div className="join-notification">
+      <div className="join-notification__avatar join-notification__avatar--group">
+        <IconAddPerson />
+      </div>
+      <div className="join-notification__info">
+        <span className="join-notification__name">{count} запросов</span>
+        <span className="join-notification__status">Ожидают подключения</span>
+      </div>
+      <button className="join-notification__action join-notification__action--accept" onClick={onAcceptAll}>
+        Принять всех
+      </button>
+      <button className="join-notification__action join-notification__action--decline" onClick={onView}>
+        Посмотреть
       </button>
       <button className="join-notification__close" onClick={onClose}>
         <IconClose />
@@ -390,11 +424,7 @@ const sidebarParticipants = [
   { name: 'Михаил Ковалёв', isMicOff: true },
 ]
 
-const pendingUsers = [
-  { name: 'Иван Петров', role: 'Гость' },
-]
-
-function ParticipantsSidebar({ onClose }) {
+function ParticipantsSidebar({ onClose, pendingUsers, onAcceptUser, onDeclineUser, onAcceptAll }) {
   return (
     <div className="sidebar">
       <div className="sidebar__header">
@@ -405,23 +435,27 @@ function ParticipantsSidebar({ onClose }) {
       </div>
 
       <div className="sidebar__content">
-        <div className="sidebar__section sidebar__section--pending">
-          <div className="sidebar__section-header">
-            <span className="sidebar__section-title">Ожидают подключения ({pendingUsers.length})</span>
-            <IconChevronUp />
-          </div>
-          <button className="sidebar__allow-all">Разрешить подключение всем</button>
-          {pendingUsers.map((user, i) => (
-            <div key={i} className="sidebar__pending-row">
-              <div className="sidebar__pending-info">
-                <span className="sidebar__participant-name">{user.name}</span>
-                {user.role && <span className="sidebar__participant-role">{user.role}</span>}
-              </div>
-              <button className="sidebar__pending-accept"><IconCheck /></button>
-              <button className="sidebar__pending-decline"><IconClose /></button>
+        {pendingUsers.length > 0 && (
+          <div className="sidebar__section sidebar__section--pending">
+            <div className="sidebar__section-header">
+              <span className="sidebar__section-title">Ожидают подключения ({pendingUsers.length})</span>
+              <IconChevronUp />
             </div>
-          ))}
-        </div>
+            {pendingUsers.length > 1 && (
+              <button className="sidebar__allow-all" onClick={onAcceptAll}>Разрешить подключение всем</button>
+            )}
+            {pendingUsers.map((user) => (
+              <div key={user.id} className="sidebar__pending-row">
+                <div className="sidebar__pending-info">
+                  <span className="sidebar__participant-name">{user.name}</span>
+                  {user.role && <span className="sidebar__participant-role">{user.role}</span>}
+                </div>
+                <button className="sidebar__pending-accept" onClick={() => onAcceptUser(user.id)}><IconCheck /></button>
+                <button className="sidebar__pending-decline" onClick={() => onDeclineUser(user.id)}><IconClose /></button>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="sidebar__section">
           <div className="sidebar__section-header">
@@ -431,7 +465,7 @@ function ParticipantsSidebar({ onClose }) {
           {sidebarParticipants.map((user, i) => (
             <div key={i} className="sidebar__participant-row">
               <span className="sidebar__participant-name">{user.name}</span>
-              {user.isModerator && <IconModerator />}
+              {user.isModerator && <span className="tooltip-wrap"><IconModerator /><span className="tooltip">Модератор</span></span>}
               {user.isMicOff && <IconMicOff />}
               <IconDots />
             </div>
@@ -513,51 +547,82 @@ function App() {
   const [showReactions, setShowReactions] = useState(false)
   const [flyingEmojis, setFlyingEmojis] = useState([])
   const emojiButtonRef = useRef(null)
+  const [showSidebar, setShowSidebar] = useState(false)
+  const showSidebarRef = useRef(false)
 
-  // Join request notification
-  const [notification, setNotification] = useState(null)
+  // Pending join requests (shared between notification & sidebar)
+  const [pendingUsers, setPendingUsers] = useState([])
+  const [showNotif, setShowNotif] = useState(false)
   const [dismissed, setDismissed] = useState(false)
   const requestIndexRef = useRef(0)
   const timerRef = useRef(null)
 
-  const showNextRequest = () => {
-    const req = joinRequests[requestIndexRef.current % joinRequests.length]
+  const addNextRequest = () => {
+    const req = allJoinRequests[requestIndexRef.current % allJoinRequests.length]
     requestIndexRef.current++
-    setNotification(req)
-    setDismissed(false)
-    playNotificationSound()
+    const newReq = { ...req, id: Date.now() }
+    setPendingUsers(prev => [...prev, newReq])
+    if (!showSidebarRef.current) {
+      setShowNotif(true)
+      setDismissed(false)
+      playNotificationSound()
+    }
+    scheduleNext()
   }
 
   const scheduleNext = () => {
     clearTimeout(timerRef.current)
-    timerRef.current = setTimeout(showNextRequest, 8000)
+    timerRef.current = setTimeout(addNextRequest, 8000)
+  }
+
+  const dismissNotif = () => {
+    setDismissed(true)
+    setTimeout(() => setShowNotif(false), 300)
   }
 
   const handleDismiss = () => {
-    setDismissed(true)
-    setTimeout(() => setNotification(null), 300)
-    scheduleNext()
+    dismissNotif()
+  }
+
+  const removeUser = (id) => {
+    setPendingUsers(prev => {
+      const next = prev.filter(u => u.id !== id)
+      if (next.length === 0) dismissNotif()
+      return next
+    })
   }
 
   const handleAccept = () => {
-    setDismissed(true)
-    setTimeout(() => setNotification(null), 300)
-    scheduleNext()
+    if (pendingUsers.length > 0) removeUser(pendingUsers[pendingUsers.length - 1].id)
   }
 
   const handleDecline = () => {
-    setDismissed(true)
-    setTimeout(() => setNotification(null), 300)
-    scheduleNext()
+    if (pendingUsers.length > 0) removeUser(pendingUsers[pendingUsers.length - 1].id)
+  }
+
+  const handleAcceptUser = (id) => {
+    removeUser(id)
+  }
+
+  const handleDeclineUser = (id) => {
+    removeUser(id)
+  }
+
+  const handleAcceptAll = () => {
+    setPendingUsers([])
+    dismissNotif()
+  }
+
+  const handleViewPending = () => {
+    dismissNotif()
+    setShowSidebar(true)
+    showSidebarRef.current = true
   }
 
   useEffect(() => {
-    timerRef.current = setTimeout(showNextRequest, 3000)
+    timerRef.current = setTimeout(addNextRequest, 3000)
     return () => clearTimeout(timerRef.current)
   }, [])
-
-  // Participants sidebar
-  const [showSidebar, setShowSidebar] = useState(false)
 
   // Chat bounce
   const [chatBounce, setChatBounce] = useState(false)
@@ -580,14 +645,23 @@ function App() {
 
   return (
     <div className="video-conference">
-      {notification && (
+      {showNotif && !showSidebar && pendingUsers.length > 0 && (
         <div className={`join-notification-wrapper ${dismissed ? 'join-notification-wrapper--out' : ''}`}>
-          <JoinNotification
-            request={notification}
-            onAccept={handleAccept}
-            onDecline={handleDecline}
-            onClose={handleDismiss}
-          />
+          {pendingUsers.length === 1 ? (
+            <JoinNotification
+              request={pendingUsers[0]}
+              onAccept={handleAccept}
+              onDecline={handleDecline}
+              onClose={handleDismiss}
+            />
+          ) : (
+            <GroupNotification
+              count={pendingUsers.length}
+              onAcceptAll={handleAcceptAll}
+              onView={handleViewPending}
+              onClose={handleDismiss}
+            />
+          )}
         </div>
       )}
 
@@ -603,7 +677,13 @@ function App() {
         </div>
 
         {showSidebar && (
-          <ParticipantsSidebar onClose={() => setShowSidebar(false)} />
+          <ParticipantsSidebar
+            onClose={() => { setShowSidebar(false); showSidebarRef.current = false }}
+            pendingUsers={pendingUsers}
+            onAcceptUser={handleAcceptUser}
+            onDeclineUser={handleDeclineUser}
+            onAcceptAll={handleAcceptAll}
+          />
         )}
       </div>
 
@@ -635,7 +715,7 @@ function App() {
           <ControlButton icon={<IconSparkle />} compact />
           <ControlButton icon={<IconGrid />} compact />
           <ControlButton icon={<IconChat />} compact badge className={chatBounce ? 'btn--bounce' : ''} />
-          <ControlButton icon={<IconParticipants />} text="13" onClick={() => setShowSidebar(prev => !prev)} />
+          <ControlButton icon={<IconParticipants />} text="13" onClick={() => { setShowSidebar(prev => { showSidebarRef.current = !prev; return !prev }); }} />
         </div>
       </div>
     </div>
