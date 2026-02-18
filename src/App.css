@@ -1,0 +1,283 @@
+/* ===== Layout ===== */
+.video-conference {
+  width: 100%;
+  height: 100vh;
+  background: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== Video Grid ===== */
+.video-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 12px;
+  padding: 24px 28px;
+  min-height: 0;
+}
+
+.video-grid > * {
+  min-height: 0;
+}
+
+/* ===== Video Tile ===== */
+.video-tile {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  min-height: 0;
+}
+
+.video-tile--speaking {
+  border: 3px solid #40b259;
+}
+
+.video-tile--has-video {
+  background: #7c7c7c;
+}
+
+.video-tile__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Avatar (no video) */
+.video-tile__avatar {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.video-tile__avatar-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Participant name overlay */
+.video-tile__name {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.video-tile__name-text {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6), 0 0 2px rgba(0, 0, 0, 0.3);
+}
+
+.video-tile__name-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-tile__name-icon svg,
+.video-tile__name-icon img {
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== Control Bar ===== */
+.control-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 12px;
+  background: #1a1a1a;
+  flex-shrink: 0;
+}
+
+/* Logo */
+.control-bar__logo {
+  display: flex;
+  align-items: center;
+  min-width: 140px;
+}
+
+.control-bar__logo-img {
+  height: 12px;
+  width: auto;
+}
+
+/* Center Controls */
+.control-bar__center {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Right Controls */
+.control-bar__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 140px;
+  justify-content: flex-end;
+}
+
+/* ===== Figma Icon Images ===== */
+.figma-icon {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+/* ===== Buttons ===== */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 60px;
+  padding: 8px 16px;
+  gap: 8px;
+  transition: background 0.15s;
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Compact icon-only (right panel buttons) */
+.btn--compact {
+  padding: 8px;
+}
+
+.btn--end-call {
+  background: #e06141;
+}
+
+.btn--end-call:hover {
+  background: #c9523a;
+}
+
+.btn__icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn__icon svg,
+.btn__icon img {
+  width: 100%;
+  height: 100%;
+}
+
+.btn__separator {
+  width: 1px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.btn__chevron {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn__chevron img {
+  width: 10px;
+  height: 6px;
+  transform: rotate(180deg);
+}
+
+.btn__text {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+}
+
+/* ===== Emoji Button Wrapper ===== */
+.emoji-button-wrapper {
+  position: relative;
+}
+
+/* ===== Reactions Panel ===== */
+.reactions-panel {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  background: #2E2F36;
+  border-radius: 112px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.reactions-panel__item {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.reactions-panel__item:hover {
+  transform: scale(1.3);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Notification badge */
+.btn--with-badge {
+  position: relative;
+}
+
+.btn__badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 10px;
+  height: 10px;
+  background: #40b259;
+  border-radius: 50%;
+  border: 2px solid #1a1a1a;
+}
