@@ -256,12 +256,13 @@ function VideoTile({ participant }) {
 }
 
 /* ===== Control Button ===== */
-function ControlButton({ icon, chevron, text, endCall, compact, badge, onClick }) {
+function ControlButton({ icon, chevron, text, endCall, compact, badge, onClick, className }) {
   const btnClass = [
     'btn',
     compact && 'btn--compact',
     endCall && 'btn--end-call',
     badge && 'btn--with-badge',
+    className,
   ].filter(Boolean).join(' ')
 
   return (
@@ -441,6 +442,16 @@ function App() {
     return () => clearTimeout(timerRef.current)
   }, [])
 
+  // Chat bounce
+  const [chatBounce, setChatBounce] = useState(false)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setChatBounce(true)
+      setTimeout(() => setChatBounce(false), 1700)
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [])
+
   const handleReact = (emoji) => {
     const id = ++flyIdCounter
     setFlyingEmojis(prev => [...prev, { id, emoji }])
@@ -500,7 +511,7 @@ function App() {
         <div className="control-bar__right">
           <ControlButton icon={<IconSparkle />} compact />
           <ControlButton icon={<IconGrid />} compact />
-          <ControlButton icon={<IconChat />} compact badge />
+          <ControlButton icon={<IconChat />} compact badge className={chatBounce ? 'btn--bounce' : ''} />
           <ControlButton icon={<IconParticipants />} text="13" />
         </div>
       </div>

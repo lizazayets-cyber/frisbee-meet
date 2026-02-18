@@ -233,7 +233,7 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 200;
-  animation: notifIn 0.3s ease-out forwards;
+  animation: notifIn 0.5s ease-out forwards;
 }
 
 .join-notification-wrapper--out {
@@ -241,11 +241,18 @@
 }
 
 @keyframes notifIn {
-  from {
+  0% {
     opacity: 0;
-    transform: translateX(-50%) translateY(-20px);
+    transform: translateX(-50%) translateY(-32px);
   }
-  to {
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(8px);
+  }
+  70% {
+    transform: translateX(-50%) translateY(-4px);
+  }
+  100% {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
@@ -431,4 +438,18 @@
   background: #40b259;
   border-radius: 50%;
   border: 2px solid #1a1a1a;
+}
+
+/* Chat bounce animation */
+.btn--bounce {
+  animation: chatBounce 0.8s ease-out 2;
+}
+
+@keyframes chatBounce {
+  0% { transform: translateY(0); }
+  25% { transform: translateY(-32px); }
+  50% { transform: translateY(0); }
+  65% { transform: translateY(-12px); }
+  80% { transform: translateY(0); }
+  100% { transform: translateY(0); }
 }
