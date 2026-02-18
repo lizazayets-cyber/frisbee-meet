@@ -498,11 +498,8 @@ function ParticipantsSidebar({ onClose, pendingUsers, onAcceptUser, onDeclineUse
 }
 
 /* ===== Settings Sidebar ===== */
-function SettingsSidebar({ onClose }) {
-  const [accessMode, setAccessMode] = useState('guests_with_permission')
-  const [moderatorsAllow, setModeratorsAllow] = useState(true)
-  const [soundEnabled, setSoundEnabled] = useState(true)
-  const [notifEnabled, setNotifEnabled] = useState(true)
+function SettingsSidebar({ onClose, accessMode, setAccessMode, moderatorsAllow, setModeratorsAllow, soundEnabled, setSoundEnabled, notifEnabled, setNotifEnabled }) {
+  const disabled = accessMode === 'all'
 
   return (
     <div className="sidebar">
@@ -533,27 +530,27 @@ function SettingsSidebar({ onClose }) {
           </label>
         </div>
 
-        <div className="settings-section">
+        <div className={`settings-section ${disabled ? 'settings-section--disabled' : ''}`}>
           <div className="settings-label">Подключение разрешают:</div>
           <div className="settings-toggle-row">
             <div className="settings-toggle-info">
               <span className="settings-toggle-title">Модераторы и пользователи приложения</span>
               <span className="settings-toggle-desc">При отключении функции — только модераторы</span>
             </div>
-            <button className={`settings-toggle ${moderatorsAllow ? 'settings-toggle--on' : ''}`} onClick={() => setModeratorsAllow(prev => !prev)}>
+            <button className={`settings-toggle ${moderatorsAllow && !disabled ? 'settings-toggle--on' : ''}`} disabled={disabled} onClick={() => setModeratorsAllow(prev => !prev)}>
               <span className="settings-toggle__thumb" />
             </button>
           </div>
         </div>
 
-        <div className="settings-section">
+        <div className={`settings-section ${disabled ? 'settings-section--disabled' : ''}`}>
           <div className="settings-label">Звук и уведомление о запросах на подключение</div>
           <div className="settings-toggle-row">
             <div className="settings-toggle-info">
               <span className="settings-toggle-title">Звуковой сигнал</span>
               <span className="settings-toggle-desc">Звуковой сигнал о пользователях, ожидающих разрешения на подключение</span>
             </div>
-            <button className={`settings-toggle ${soundEnabled ? 'settings-toggle--on' : ''}`} onClick={() => setSoundEnabled(prev => !prev)}>
+            <button className={`settings-toggle ${soundEnabled && !disabled ? 'settings-toggle--on' : ''}`} disabled={disabled} onClick={() => setSoundEnabled(prev => !prev)}>
               <span className="settings-toggle__thumb" />
             </button>
           </div>
@@ -562,7 +559,7 @@ function SettingsSidebar({ onClose }) {
               <span className="settings-toggle-title">Уведомления</span>
               <span className="settings-toggle-desc">Уведомление о пользователях, ожидающих разрешения на подключение</span>
             </div>
-            <button className={`settings-toggle ${notifEnabled ? 'settings-toggle--on' : ''}`} onClick={() => setNotifEnabled(prev => !prev)}>
+            <button className={`settings-toggle ${notifEnabled && !disabled ? 'settings-toggle--on' : ''}`} disabled={disabled} onClick={() => setNotifEnabled(prev => !prev)}>
               <span className="settings-toggle__thumb" />
             </button>
           </div>
@@ -699,6 +696,20 @@ function App() {
   const [showSidebar, setShowSidebar] = useState(false)
   const showSidebarRef = useRef(false)
 
+  // Settings state (lifted up)
+  const [accessMode, setAccessMode] = useState('guests_with_permission')
+  const [moderatorsAllow, setModeratorsAllow] = useState(true)
+  const [soundEnabled, setSoundEnabled] = useState(true)
+  const [notifEnabled, setNotifEnabled] = useState(true)
+  const accessModeRef = useRef('guests_with_permission')
+  const soundRef = useRef(true)
+  const notifRef = useRef(true)
+
+  // Keep refs in sync
+  useEffect(() => { accessModeRef.current = accessMode }, [accessMode])
+  useEffect(() => { soundRef.current = soundEnabled }, [soundEnabled])
+  useEffect(() => { notifRef.current = notifEnabled }, [notifEnabled])
+
   // Pending join requests (shared between notification & sidebar)
   const [pendingUsers, setPendingUsers] = useState([])
   const [showNotif, setShowNotif] = useState(false)
@@ -707,13 +718,22 @@ function App() {
   const timerRef = useRef(null)
 
   const addNextRequest = () => {
+    // "Всем" — гости заходят без запроса
+    if (accessModeRef.current === 'all') {
+      scheduleNext()
+      return
+    }
+
     const req = allJoinRequests[requestIndexRef.current % allJoinRequests.length]
     requestIndexRef.current++
     const newReq = { ...req, id: Date.now() }
     setPendingUsers(prev => [...prev, newReq])
-    if (!showSidebarRef.current) {
+
+    if (!showSidebarRef.current && notifRef.current) {
       setShowNotif(true)
       setDismissed(false)
+    }
+    if (!showSidebarRef.current && soundRef.current) {
       playNotificationSound()
     }
     scheduleNext()
@@ -835,7 +855,17 @@ function App() {
           />
         )}
         {showSettings && (
-          <SettingsSidebar onClose={() => setShowSettings(false)} />
+          <SettingsSidebar
+            onClose={() => setShowSettings(false)}
+            accessMode={accessMode}
+            setAccessMode={setAccessMode}
+            moderatorsAllow={moderatorsAllow}
+            setModeratorsAllow={setModeratorsAllow}
+            soundEnabled={soundEnabled}
+            setSoundEnabled={setSoundEnabled}
+            notifEnabled={notifEnabled}
+            setNotifEnabled={setNotifEnabled}
+          />
         )}
       </div>
 

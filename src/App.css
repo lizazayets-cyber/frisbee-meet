@@ -735,6 +735,12 @@
   transform: translateX(20px);
 }
 
+/* Disabled settings section */
+.settings-section--disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
 /* ===== More Menu ===== */
 .more-button-wrapper {
   position: relative;
