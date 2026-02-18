@@ -338,6 +338,120 @@ function JoinNotification({ request, onAccept, onDecline, onClose }) {
   )
 }
 
+/* ===== Sidebar Icons ===== */
+function IconDots() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="4" r="1.2" fill="rgba(255,255,255,0.55)"/>
+      <circle cx="8" cy="8" r="1.2" fill="rgba(255,255,255,0.55)"/>
+      <circle cx="8" cy="12" r="1.2" fill="rgba(255,255,255,0.55)"/>
+    </svg>
+  )
+}
+
+function IconCheck() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="#40b259"/>
+    </svg>
+  )
+}
+
+function IconCopy() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" fill="rgba(255,255,255,0.55)"/>
+    </svg>
+  )
+}
+
+function IconChevronUp() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M4.94 10.06L8 7l3.06 3.06 1.06-1.06L8 4.94 3.88 9l1.06 1.06z" fill="rgba(255,255,255,0.55)"/>
+    </svg>
+  )
+}
+
+/* ===== Participants Sidebar ===== */
+const sidebarParticipants = [
+  { name: 'Иван Петров', isModerator: true, isMicOff: true },
+  { name: 'Андрей Резанцев', isMicOff: true },
+  { name: 'Алексей Соколов', isMicOff: true },
+  { name: 'Дмитрий Орлов', isMicOff: true },
+  { name: 'Анна Морозова', isMicOff: true },
+  { name: 'Анастасия Смирнова', isMicOff: true },
+  { name: 'Андрей Резанцев', isMicOff: true },
+  { name: 'Елена Волкова', isMicOff: true },
+  { name: 'Сергей Никитин', isMicOff: true },
+  { name: 'Виктория Федорова', isMicOff: true },
+  { name: 'Наталья Громова', isMicOff: true },
+  { name: 'Антон Павлов', isMicOff: true, role: 'Гость' },
+  { name: 'Михаил Ковалёв', isMicOff: true },
+]
+
+const pendingUsers = [
+  { name: 'Иван Петров', role: 'Гость' },
+]
+
+function ParticipantsSidebar({ onClose }) {
+  return (
+    <div className="sidebar">
+      <div className="sidebar__header">
+        <span className="sidebar__title">Участники</span>
+        <button className="sidebar__close" onClick={onClose}>
+          <IconClose />
+        </button>
+      </div>
+
+      <div className="sidebar__content">
+        <div className="sidebar__section sidebar__section--pending">
+          <div className="sidebar__section-header">
+            <span className="sidebar__section-title">Ожидают подключения ({pendingUsers.length})</span>
+            <IconChevronUp />
+          </div>
+          <button className="sidebar__allow-all">Разрешить подключение всем</button>
+          {pendingUsers.map((user, i) => (
+            <div key={i} className="sidebar__pending-row">
+              <div className="sidebar__pending-info">
+                <span className="sidebar__participant-name">{user.name}</span>
+                {user.role && <span className="sidebar__participant-role">{user.role}</span>}
+              </div>
+              <button className="sidebar__pending-accept"><IconCheck /></button>
+              <button className="sidebar__pending-decline"><IconClose /></button>
+            </div>
+          ))}
+        </div>
+
+        <div className="sidebar__section">
+          <div className="sidebar__section-header">
+            <span className="sidebar__section-title">Участники ({sidebarParticipants.length})</span>
+            <IconChevronUp />
+          </div>
+          {sidebarParticipants.map((user, i) => (
+            <div key={i} className="sidebar__participant-row">
+              <span className="sidebar__participant-name">{user.name}</span>
+              {user.isModerator && <IconModerator />}
+              {user.isMicOff && <IconMicOff />}
+              <IconDots />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="sidebar__footer">
+        <div className="sidebar__link-field">
+          <div className="sidebar__link-label">Ссылка на встречу</div>
+          <div className="sidebar__link-row">
+            <span className="sidebar__link-text">https://web.tdm.mos.ru/call/56...</span>
+            <button className="sidebar__link-copy"><IconCopy /></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* ===== Reactions Panel ===== */
 const reactions = ['👋', '❤️', '👍', '👏', '🎉', '🔥', '🤣', '🤔', '😠', '👎', '😭', '💩']
 
@@ -442,6 +556,9 @@ function App() {
     return () => clearTimeout(timerRef.current)
   }, [])
 
+  // Participants sidebar
+  const [showSidebar, setShowSidebar] = useState(false)
+
   // Chat bounce
   const [chatBounce, setChatBounce] = useState(false)
   useEffect(() => {
@@ -478,10 +595,16 @@ function App() {
         <FlyingEmoji key={id} id={id} emoji={emoji} onDone={handleFlyDone} />
       ))}
 
-      <div className="video-grid">
-        {participants.map(p => (
-          <VideoTile key={p.id} participant={p} />
-        ))}
+      <div className="video-conference__body">
+        <div className="video-grid">
+          {participants.map(p => (
+            <VideoTile key={p.id} participant={p} />
+          ))}
+        </div>
+
+        {showSidebar && (
+          <ParticipantsSidebar onClose={() => setShowSidebar(false)} />
+        )}
       </div>
 
       <div className="control-bar">
@@ -512,7 +635,7 @@ function App() {
           <ControlButton icon={<IconSparkle />} compact />
           <ControlButton icon={<IconGrid />} compact />
           <ControlButton icon={<IconChat />} compact badge className={chatBounce ? 'btn--bounce' : ''} />
-          <ControlButton icon={<IconParticipants />} text="13" />
+          <ControlButton icon={<IconParticipants />} text="13" onClick={() => setShowSidebar(prev => !prev)} />
         </div>
       </div>
     </div>
